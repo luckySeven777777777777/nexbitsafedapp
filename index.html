@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>Connect Wallet</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- WalletConnect v2 -->
+  <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.11.0/dist/index.umd.js"></script>
+
+  <style>
+    #connectBtn {
+      padding: 14px 28px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      background: #ff8c00;
+      color: #fff;
+      cursor: pointer;
+    }
+    #status {
+      margin-top: 12px;
+      font-size: 14px;
+      word-break: break-all;
+    }
+  </style>
+</head>
+
+<body>
+
+  <button id="connectBtn">Connect Wallet</button>
+  <div id="status">Not connected</div>
+
+  <script>
+    const projectId = "257aebada0de0efef7d425e84b57ebfe";
+
+    const WCProvider = window.WalletConnectEthereumProvider.default;
+    let wcProvider;
+
+    document.getElementById("connectBtn").onclick = async () => {
+      try {
+        wcProvider = await WCProvider.init({
+          projectId,
+          chains: [1, 56],
+          showQrModal: true,
+          metadata: {
+            name: "NEXBITSAFE",
+            description: "Connect to NEXBITSAFE",
+            url: window.location.origin,
+            icons: []
+          }
+        });
+
+        await wcProvider.connect();
+
+        const accounts = wcProvider.accounts;
+        document.getElementById("status").innerText =
+          "✅ Connected: " + accounts[0];
+
+      } catch (e) {
+        document.getElementById("status").innerText =
+          "❌ Connection cancelled";
+        console.error(e);
+      }
+    };
+  </script>
+
+</body>
+</html>
