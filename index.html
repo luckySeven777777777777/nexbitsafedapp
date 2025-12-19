@@ -2,65 +2,91 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <title>Connect Wallet</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- WalletConnect v2 -->
-  <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.11.0/dist/index.umd.js"></script>
+  <title>Connect Wallet</title>
 
   <style>
-    #connectBtn {
-      padding: 14px 28px;
-      font-size: 16px;
-      border-radius: 8px;
+    #connectButton {
+      padding: 12px 24px;
+      background-color: #f6851b;
+      color: white;
       border: none;
-      background: #ff8c00;
-      color: #fff;
+      border-radius: 8px;
+      font-size: 16px;
       cursor: pointer;
     }
-    #status {
+    #walletStatus {
       margin-top: 12px;
       font-size: 14px;
-      word-break: break-all;
     }
   </style>
 </head>
 
 <body>
 
-  <button id="connectBtn">Connect Wallet</button>
-  <div id="status">Not connected</div>
+  <button id="connectButton">Connect Wallet</button>
+  <div id="walletStatus">Not connected</div>
 
   <script>
-    const projectId = "257aebada0de0efef7d425e84b57ebfe";
+    const btn = document.getElementById("connectButton");
+    const info = document.getElementById("walletStatus");
 
-    const WCProvider = window.WalletConnectEthereumProvider.default;
-    let wcProvider;
+    // 检查 MetaMask
+    if (typeof window.ethereum === "undefined") {
+      info.innerText = "❌ MetaMask not detected";
+    }
 
-    document.getElementById("connectBtn").onclick = async () => {
-      try {
-        wcProvider = await WCProvider.init({
-          projectId,
-          chains: [1, 56],
-          showQrModal: true,
-          metadata: {
-            name: "NEXBITSAFE",
-            description: "Connect to NEXBITSAFE",
-            url: window.location.origin,
-            icons: []
-          }
-        });
+    btn.onclick = async () => {
+      if (window.ethereum) {
+        try {
+          // 连接 MetaMask
+          const accounts = await window.ethereum.request({
+            method: "eth_requestAccounts"
+          });
 
-        await wcProvider.connect();
+          info.innerText = "✅ Connected: " + accounts[0];
 
-        const accounts = wcProvider.accounts;
-        document.getElementById("status").innerText =
-          "✅ Connected: " + accounts[0];
+          // 监听账户切换
+          window.ethereum.on("accountsChanged", (accounts) => {
+            info.innerText = "🔄 Switched: " + accounts[0];
+          });
 
-      } catch (e) {
-        document.getElementById("status").innerText =
-          "❌ Connection cancelled";
-        console.error(e);
+        } catch (err) {
+          info.innerText = "❌ User rejected connection";
+        }
+      } else {
+        // 如果没有 MetaMask，使用 WalletConnect 连接
+        const projectId = "257aebada0de0efef7d425e84b57ebfe";  // 请替换为你自己的 Project ID
+        const WCProvider = window.WalletConnectEthereumProvider.default;
+        let wcProvider;
+
+        try {
+          // 初始化 WalletConnect Provider
+          wcProvider = await WCProvider.init({
+            projectId,
+            chains: [1, 56],  // 支持 Ethereum 和 BSC
+            showQrModal: true,  // 显示 WalletConnect 扫码弹窗
+            methods: ["eth_sendTransaction", "personal_sign"],
+            events: ["accountsChanged", "chainChanged"],
+            metadata: {
+              name: "NEXBITSAFE",
+              description: "Connect to NEXBITSAFE",
+              url: window.location.origin,
+              icons: []
+            }
+          });
+
+          // 连接钱包
+          await wcProvider.connect();
+
+          // 获取连接的账户地址
+          const accounts = wcProvider.accounts;
+          info.innerText = "✅ Connected: " + accounts[0];
+
+        } catch (err) {
+          console.error(err);
+          info.innerText = "❌ WalletConnect connection failed";
+        }
       }
     };
   </script>
