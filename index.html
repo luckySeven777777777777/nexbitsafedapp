@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -47,117 +47,100 @@
 <body>
 
   <button id="connectButton">Connect Wallet</button>
-
   <div id="walletSelector">
     <div class="wallet-option" id="metamaskOption">
-      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT3ymr3UNKopfI0NmUY95Dr-0589vG-91KuAA&s" />
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT3ymr3UNKopfI0NmUY95Dr-0589vG-91KuAA&s" alt="MetaMask Logo" />
       MetaMask
     </div>
-
     <div class="wallet-option" id="walletconnectOption">
-      <img src="https://99bitcoins.com/wp-content/uploads/2025/03/crypto.com-wallet-logo.jpg" />
+      <img src="https://99bitcoins.com/wp-content/uploads/2025/03/crypto.com-wallet-logo.jpg" alt="Crypto.com DeFi Wallet Logo" />
       Crypto.com DeFi Wallet
     </div>
-
     <div class="wallet-option" id="trustWalletOption">
-      <img src="https://logowik.com/content/uploads/images/trust-wallet-shield4830.logowik.com.webp" />
+      <img src="https://logowik.com/content/uploads/images/trust-wallet-shield4830.logowik.com.webp" alt="Trust Wallet Logo" />
       Trust Wallet
     </div>
-
     <div class="wallet-option" id="okxWalletOption">
-      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR8aoojZr1ORW_wq3W0bxM4aQEY9kIotJEcKg&s" />
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR8aoojZr1ORW_wq3W0bxM4aQEY9kIotJEcKg&s" alt="OKX Wallet Logo" />
       OKX Wallet
     </div>
-
     <div class="wallet-option" id="safepalWalletOption">
-      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR36IDA58MpqEx-G_pB8f6zmVVoAjI3pkzldA&s" />
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR36IDA58MpqEx-G_pB8f6zmVVoAjI3pkzldA&s" alt="SafePal Wallet Logo" />
       SafePal Wallet
     </div>
   </div>
-
   <div id="walletStatus">Not connected</div>
 
-  <!-- WalletConnect v2 官方 UMD -->
-  <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.11.0/dist/index.umd.js"></script>
+  <!-- 引入 WalletConnect 库 -->
+  <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.6.6/dist/umd/index.min.js"></script>
 
   <script>
     const btn = document.getElementById("connectButton");
     const info = document.getElementById("walletStatus");
     const walletSelector = document.getElementById("walletSelector");
 
-    let wcProvider = null;
-    let wcReady = false;
-
-    // 显示钱包列表
-    btn.onclick = () => {
+    // 显示钱包选择界面
+    const showWalletSelector = () => {
       walletSelector.style.display = "block";
     };
 
-    // MetaMask 连接
+    // 连接 MetaMask 钱包
     const connectMetaMask = async () => {
       try {
-        if (!window.ethereum) {
-          info.innerText = "❌ MetaMask not installed";
-          return;
-        }
         const accounts = await window.ethereum.request({
           method: "eth_requestAccounts"
         });
         info.innerText = "✅ Connected: " + accounts[0];
-      } catch (e) {
-        info.innerText = "❌ MetaMask connection rejected";
+      } catch (err) {
+        info.innerText = "❌ User rejected connection";
       }
     };
 
-    document.getElementById("metamaskOption").onclick = connectMetaMask;
-
-    // WalletConnect 初始化（页面加载即执行）
-    (async () => {
-      try {
-        wcProvider = await window.WalletConnectEthereumProvider.init({
-          projectId: "257aebada0de0efef7d425e84b57ebfe",
-          chains: [1],
-          showQrModal: true,
-          metadata: {
-            name: "NEXBIT",
-            description: "NEXBIT DApp",
-            url: window.location.origin,
-            icons: []
-          }
-        });
-        wcReady = true;
-      } catch (e) {
-        console.error(e);
-        info.innerText = "❌ WalletConnect init failed";
-      }
-    })();
-
-    // WalletConnect 连接（统一入口）
+    // 连接 WalletConnect 钱包
     const connectWalletConnect = async () => {
       try {
-        if (!wcReady || !wcProvider) {
-          info.innerText = "⏳ WalletConnect initializing...";
-          return;
-        }
-
-        await wcProvider.connect();
-
-        const accounts = await wcProvider.request({
-          method: "eth_accounts"
+        const provider = new window.WalletConnectProvider.default({
+          infuraId: "YOUR_INFURA_ID",  // 替换为你的 Infura ID
         });
 
+        // 启用 WalletConnect 提供的 provider
+        await provider.enable();
+        const accounts = await provider.request({ method: "eth_accounts" });
         info.innerText = "✅ Connected: " + accounts[0];
-      } catch (e) {
-        console.error(e);
-        info.innerText = "❌ WalletConnect failed";
+      } catch (err) {
+        info.innerText = "❌ WalletConnect connection failed";
       }
     };
 
-    // 所有 WalletConnect 钱包统一走官方 Modal
-    document.getElementById("walletconnectOption").onclick =
-    document.getElementById("trustWalletOption").onclick =
-    document.getElementById("okxWalletOption").onclick =
-    document.getElementById("safepalWalletOption").onclick = connectWalletConnect;
+    // 按钮点击事件，显示钱包选择
+    btn.onclick = () => {
+      showWalletSelector();
+    };
+
+    // 点击 MetaMask 选项
+    document.getElementById("metamaskOption").onclick = () => {
+      connectMetaMask();
+    };
+
+    // 点击 Crypto.com DeFi Wallet 选项
+    document.getElementById("walletconnectOption").onclick = () => {
+      connectWalletConnect();
+    };
+
+    // 点击 Trust Wallet 选项
+    document.getElementById("trustWalletOption").onclick = () => {
+      connectWalletConnect();
+    };
+
+    // 点击 OKX Wallet 选项
+    document.getElementById("okxWalletOption").onclick = () => {
+      connectWalletConnect();
+    };
+
+    // 点击 SafePal Wallet 选项
+    document.getElementById("safepalWalletOption").onclick = () => {
+      connectWalletConnect();
+    };
   </script>
 
 </body>
