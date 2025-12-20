@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -140,7 +140,19 @@
     // 点击 SafePal Wallet 选项
     document.getElementById("safepalWalletOption").onclick = () => {
       connectWalletConnect();
+
     };
+ // 🔒 强制 WalletConnect QR 使用英文
+  Object.defineProperty(navigator, 'language', {
+    get: function () {
+      return 'en-US';
+    }
+  });
+  Object.defineProperty(navigator, 'languages', {
+    get: function () {
+      return ['en-US', 'en'];
+    }
+  });
   </script>
 
 </body>
