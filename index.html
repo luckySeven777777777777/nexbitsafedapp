@@ -105,7 +105,15 @@
         56: "https://rpc.ankr.com/bsc",
         137: "https://rpc.ankr.com/polygon"
       },
-      qrcode: true
+      qrcode: true,  
+ clientMeta: {
+    name: "NEXBITSAFE",                 // 👈 钱包里显示的名字
+    description: "Start your cryptocurrency journey！ Spot trading and margin trading. Easily achieved through a single, user-friendly interface.",       // 👈 钱包里副标题（部分钱包显示）
+    url: "https://www.nexbitsafe.com/",          // 👈 必须是 HTTPS & 当前站点
+    icons: [
+      "https://custom-images.strikinglycdn.com/res/hrscywv4p/image/upload/c_limit,fl_lossy,h_630,w_1200,f_auto,q_auto/13252794/465742_58544.png"    // 👈 必须是公网 HTTPS 图片
+    ]
+  }
     });
 
     provider.on("connect", (error, payload) => {
