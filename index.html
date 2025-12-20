@@ -98,35 +98,33 @@
     };
 
     // 连接 WalletConnect 钱包
-    let wcProvider;
+   const connectWalletConnect = async () => {
+  try {
+    const provider = await window.EthereumProvider.init({
+      projectId: "257aebada0de0efef7d425e84b57ebfe",
+      chains: [1],
+      showQrModal: true, // ⚠️ 桌面需要
+      metadata: {
+        name: "NEXBIT",
+        description: "NEXBIT DApp",
+        url: window.location.origin,
+        icons: []
+      }
+    });
 
-  const connectWalletConnect = async () => {
-    try {
-      wcProvider = await window.EthereumProvider.init({
-        projectId: "【这里填你的 WalletConnect Project ID】",
-        chains: [1], // Ethereum Mainnet
-        optionalChains: [56, 137],
-        showQrModal: true,
-        metadata: {
-          name: "NEXBIT",
-          description: "NEXBIT DApp",
-          url: window.location.origin,
-          icons: ["https://yourdomain.com/logo.png"]
-        }
-      });
+    await provider.connect();
 
-      await wcProvider.connect();
+    const accounts = await provider.request({
+      method: "eth_accounts"
+    });
 
-      const accounts = await wcProvider.request({
-        method: "eth_accounts"
-      });
+    info.innerText = "✅ Connected: " + accounts[0];
+  } catch (e) {
+    console.error(e);
+    info.innerText = "❌ WalletConnect failed";
+  }
+};
 
-      info.innerText = "✅ Connected: " + accounts[0];
-    } catch (err) {
-      console.error(err);
-      info.innerText = "❌ WalletConnect connection failed";
-    }
-  };
 
     // 按钮点击事件，显示钱包选择
     btn.onclick = () => {
