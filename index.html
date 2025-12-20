@@ -97,20 +97,40 @@
     };
 
     // 连接 WalletConnect 钱包
-    const connectWalletConnect = async () => {
-      try {
-        const provider = new window.WalletConnectProvider.default({
-          infuraId: "YOUR_INFURA_ID",  // 替换为你的 Infura ID
-        });
+  const connectWalletConnect = async () => {
+  try {
+    const provider = new window.WalletConnectProvider.default({
+      rpc: {
+        1: "https://rpc.ankr.com/eth",
+        56: "https://rpc.ankr.com/bsc",
+        137: "https://rpc.ankr.com/polygon"
+      },
+      qrcode: true
+    });
 
-        // 启用 WalletConnect 提供的 provider
-        await provider.enable();
-        const accounts = await provider.request({ method: "eth_accounts" });
+    provider.on("connect", (error, payload) => {
+      if (error) throw error;
+      const { accounts } = payload.params[0];
+      info.innerText = "✅ Connected: " + accounts[0];
+    });
+
+    provider.on("accountsChanged", (accounts) => {
+      if (accounts && accounts.length) {
         info.innerText = "✅ Connected: " + accounts[0];
-      } catch (err) {
-        info.innerText = "❌ WalletConnect connection failed";
       }
-    };
+    });
+
+    provider.on("disconnect", () => {
+      info.innerText = "❌ Disconnected";
+    });
+
+    await provider.enable();
+  } catch (err) {
+    info.innerText = "❌ WalletConnect failed";
+    console.error(err);
+  }
+};
+
 
     // 按钮点击事件，显示钱包选择
     btn.onclick = () => {
