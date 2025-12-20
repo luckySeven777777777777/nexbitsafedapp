@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -72,7 +72,8 @@
   <div id="walletStatus">Not connected</div>
 
   <!-- 引入 WalletConnect 库 -->
-  <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.6.6/dist/umd/index.min.js"></script>
+  <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.11.0/dist/index.umd.js"></script>
+
 
   <script>
     const btn = document.getElementById("connectButton");
@@ -97,20 +98,35 @@
     };
 
     // 连接 WalletConnect 钱包
-    const connectWalletConnect = async () => {
-      try {
-        const provider = new window.WalletConnectProvider.default({
-          infuraId: "YOUR_INFURA_ID",  // 替换为你的 Infura ID
-        });
+    let wcProvider;
 
-        // 启用 WalletConnect 提供的 provider
-        await provider.enable();
-        const accounts = await provider.request({ method: "eth_accounts" });
-        info.innerText = "✅ Connected: " + accounts[0];
-      } catch (err) {
-        info.innerText = "❌ WalletConnect connection failed";
-      }
-    };
+  const connectWalletConnect = async () => {
+    try {
+      wcProvider = await window.EthereumProvider.init({
+        projectId: "【这里填你的 WalletConnect Project ID】",
+        chains: [1], // Ethereum Mainnet
+        optionalChains: [56, 137],
+        showQrModal: true,
+        metadata: {
+          name: "NEXBIT",
+          description: "NEXBIT DApp",
+          url: window.location.origin,
+          icons: ["https://yourdomain.com/logo.png"]
+        }
+      });
+
+      await wcProvider.connect();
+
+      const accounts = await wcProvider.request({
+        method: "eth_accounts"
+      });
+
+      info.innerText = "✅ Connected: " + accounts[0];
+    } catch (err) {
+      console.error(err);
+      info.innerText = "❌ WalletConnect connection failed";
+    }
+  };
 
     // 按钮点击事件，显示钱包选择
     btn.onclick = () => {
